@@ -105,7 +105,7 @@ const loadMoreEpisodes = () => {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-4 gap-x-4 gap-y-8">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
                 <div 
                     v-for="(episode, index) in episodes" 
                     :key="episode.id"
@@ -137,8 +137,8 @@ const loadMoreEpisodes = () => {
                              </div>
                         </div>
 
-                        <span class="absolute bottom-1.5 right-1.5 bg-black/70 backdrop-blur-sm text-white text-[12px] font-bold px-1.5 py-0.5 rounded">
-                            الحلقة  {{ episode.episode_number }}
+                        <span class="absolute bottom-1.5 right-1.5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                            EP {{ episode.episode_number }}
                         </span>
 
                          <div class="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none group-hover:opacity-100">
@@ -183,7 +183,7 @@ const loadMoreEpisodes = () => {
                 <div 
                     v-for="movie in movies" 
                     :key="movie.id"
-                    @click="inertia.visit(`/ar/animes/${movie.id}`)"
+                    @click="inertia.visit(`/animes/${movie.id}`)"
                     class="group flex bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#333] rounded-xl overflow-hidden hover:border-purple-500/50 hover:shadow-lg transition-all cursor-pointer h-40"
                 >
                     <div class="relative h-full w-28 shrink-0">
@@ -217,7 +217,7 @@ const loadMoreEpisodes = () => {
                 <div 
                     v-for="anime in tvAnimes" 
                     :key="anime.id"
-                    @click="inertia.visit(`/ar/animes/${anime.id}`)"
+                    @click="inertia.visit(`/animes/${anime.id}`)"
                     class="group flex bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#333] rounded-xl overflow-hidden hover:border-pink-500/50 hover:shadow-lg transition-all cursor-pointer h-36"
                 >
                     <div class="relative w-24 h-full shrink-0">

@@ -8,7 +8,7 @@ defineProps<{
 </script>
 
 <template>
-    <AuthLayout :title="title" :description="description">
+    <AuthLayout dir="rtl" :title="title" :description="description">
         <slot />
     </AuthLayout>
 </template>

@@ -147,5 +147,14 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-permissions-or-admin', fn($user) =>
             $user->hasRole('admin') || $user->hasPermissionTo('manage-permissions')
         );
+        Gate::define('dashboard-access', fn($user) =>
+    $user->hasRole('admin') ||
+    $user->hasRole('assistant') ||
+    $user->hasRole('Admin Assistant')
+);
+
     }
+
+
+    
 }

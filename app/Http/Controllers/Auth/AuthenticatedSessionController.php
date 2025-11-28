@@ -24,6 +24,14 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
+     public function arcreate(Request $request): Response
+    {
+        return Inertia::render('auth/ar-Login', [
+            'canResetPassword' => Route::has('password.request'),
+            'status' => $request->session()->get('status'),
+        ]);
+    }
+
     /**
      * Handle an incoming authentication request.
      */
@@ -46,6 +54,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return back();
     }
 }

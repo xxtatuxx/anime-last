@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import AppLayout from '@/layouts/AR-HomeLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/vue3';
 import type { BreadcrumbItem } from '@/types';
@@ -52,8 +52,8 @@ const infoItems = computed(() => [
 <template>
     <Head :title="props.anime.title || 'تفاصيل الأنمي'" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col flex-1 min-h-full gap-8 p-4 md:p-8">
+    <AppLayout >
+        <div dir="rtl" class="flex flex-col flex-1 min-h-full gap-8 p-4 md:p-8">
 
             <div class="relative overflow-hidden bg-white border shadow-sm dark:bg-neutral-900 border-sidebar-border/60 rounded-3xl">
                 <div class="flex flex-col md:flex-row">
@@ -84,18 +84,8 @@ const infoItems = computed(() => [
                                 <h2 class="text-lg font-medium text-muted-foreground">{{ props.anime.title_en }}</h2>
                             </div>
                             <div class="flex items-center gap-2">
-                                <Button as-child variant="outline" size="sm">
-                                    <Link :href="route('animes.edit', props.anime.id)">
-                                        <Edit class="w-4 h-4 ml-2" />
-                                        تعديل
-                                    </Link>
-                                </Button>
-                                <Button as-child size="sm" variant="secondary">
-                                    <Link :href="route('animes.index')">
-                                        <ArrowRight class="w-4 h-4 ml-2" />
-                                        عودة
-                                    </Link>
-                                </Button>
+                              
+                             
                             </div>
                         </div>
 
@@ -172,7 +162,7 @@ const infoItems = computed(() => [
                     <Link
                         v-for="episode in filteredEpisodes"
                         :key="episode.id"
-                        :href="route('episodes.show', episode.id)"
+                        :href="route('ar.episodes.show', episode.id)"
                         class="relative flex flex-col overflow-hidden transition-all duration-300 bg-white border shadow-sm group dark:bg-neutral-900 border-sidebar-border/60 rounded-2xl hover:border-indigo-500 hover:shadow-md"
                     >
                         <div class="relative overflow-hidden bg-gray-100 aspect-video dark:bg-gray-800">

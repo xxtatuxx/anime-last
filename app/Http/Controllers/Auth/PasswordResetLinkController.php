@@ -21,6 +21,13 @@ class PasswordResetLinkController extends Controller
         ]);
     }
 
+      public function arcreate(Request $request): Response
+    {
+        return Inertia::render('auth/ar-ForgotPassword', [
+            'status' => $request->session()->get('status'),
+        ]);
+    }
+
     /**
      * Handle an incoming password reset link request.
      *

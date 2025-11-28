@@ -23,6 +23,17 @@ class RegisteredUserController extends Controller
         return Inertia::render('auth/Register');
     }
 
+
+    
+        public function arcreate(): Response
+    {
+        return Inertia::render('auth/ar-Register');
+    }
+
+
+
+    
+
     /**
      * Handle an incoming registration request.
      *

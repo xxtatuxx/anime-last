@@ -1,19 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Home;
+namespace App\Http\Controllers\en;
 
 use App\Models\Episode;
 use App\Models\Anime;
 use App\Models\News;
 use App\Models\Category;
 use App\Models\Season;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use Inertia\Inertia;
 
-class HomeController extends Controller
+class enHomeController extends Controller
 {
     public function index(Request $request)
     {
@@ -49,7 +48,7 @@ class HomeController extends Controller
         // ===== آخر الأخبار =====
         $news = News::orderByDesc('id')->take(5)->get(); // آخر 5 أخبار
 
-        return Inertia::render('home/ar-home', [
+        return Inertia::render('home-en/en-home', [
             'episodes' => $episodes,
             'animes'   => $animes,
             'news'     => $news,
@@ -58,7 +57,6 @@ class HomeController extends Controller
             ],
         ]);
     }
-
 public function anime(Request $request)
 {
     // استعلام الأنميات مع المستخدمين والفئات والموسم ونوع TV فقط
@@ -77,7 +75,7 @@ public function anime(Request $request)
     // فلترة حسب الفئة
     if ($request->category) {
         $query->whereHas('categories', function($q) use ($request) {
-            $q->where('name', $request->category);
+            $q->where('name_en', $request->category);
         });
     }
 
@@ -107,7 +105,7 @@ public function anime(Request $request)
     // جلب جميع المواسم لاستخدامها في فلترة الواجهة
     $seasons = Season::orderBy('name')->get();
 
-    return Inertia::render('home/ar-anime', [
+    return Inertia::render('home-en/en-anime', [
         'animes' => $animes,
         'categories' => $categories,
         'seasons' => $seasons,
@@ -131,7 +129,7 @@ public function movies(Request $request)
     // فلترة حسب الفئة
     if ($request->category) {
         $query->whereHas('categories', function($q) use ($request) {
-            $q->where('name', $request->category);
+            $q->where('name_en', $request->category);
         });
     }
 
@@ -159,7 +157,7 @@ public function movies(Request $request)
     $categories = Category::orderBy('name')->get();
     $seasons = Season::orderBy('name')->get();
 
-    return Inertia::render('home/ar-movies', [
+    return Inertia::render('home-en/en-movies', [
         'animes' => $animes,
         'categories' => $categories,
         'seasons' => $seasons,
@@ -187,28 +185,12 @@ public function Episodes(Request $request)
 
     $episodes = $query->paginate(15);
 
-    return Inertia::render('home/ar-Episodes', [
+    return Inertia::render('home-en/en-Episodes', [
         'episodes' => $episodes,
         'animes' => \App\Models\Anime::all(['id','title','image']), // تمرير الأنميات للـ dropdown
     ]);
 }
 
 
-
-public function show(Anime $anime)
-{
-    $anime->load([
-        'user',
-        'episodes' => function ($query) {
-            $query->orderBy('episode_number', 'asc');
-        },
-        'categories',
-        'season', // ✅ إضافة علاقة الموسم هنا
-    ]);
-
-    return Inertia::render('home/ar-anime-show', [
-        'anime' => $anime,
-    ]);
-}
 
 }

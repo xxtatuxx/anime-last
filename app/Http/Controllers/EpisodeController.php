@@ -227,8 +227,9 @@ public function update(Request $request, Episode $episode)
     // 1. منطق الصورة المصغرة (Thumbnail)
     if ($request->hasFile('thumbnail')) {
         // الحالة 1: المستخدم رفع صورة جديدة -> استخدمها
-        if ($episode->thumbnail) Storage::disk('public')->delete($episode->thumbnail);
-        $data['thumbnail'] = $request->file('thumbnail')->store('episodes', 'public');
+       if ($episode->thumbnail)// 
+       //  Storage::disk('public')->delete($episode->thumbnail);
+        $data['thumbnail'] = $request->file('thumbnail')->store('animes', 'public');
     } elseif ($seriesChanged) {
         // الحالة 2: المسلسل "تغير" ولم يرفع صورة -> استخدم صورة المسلسل "الجديد"
         $data['thumbnail'] = $newAnime->image ?? null;
@@ -240,8 +241,9 @@ public function update(Request $request, Episode $episode)
     // 2. منطق البانر (Banner)
     if ($request->hasFile('banner')) {
         // الحالة 1: المستخدم رفع صورة جديدة -> استخدمها
-        if ($episode->banner) Storage::disk('public')->delete($episode->banner);
-        $data['banner'] = $request->file('banner')->store('episodes', 'public');
+        if ($episode->banner) 
+           // Storage::disk('public')->delete($episode->banner);
+        $data['banner'] = $request->file('banner')->store('animes', 'public');
     } elseif ($seriesChanged) {
         // الحالة 2: المسلسل "تغير" ولم يرفع صورة -> استخدم صورة المسلسل "الجديد"
         $data['banner'] = $newAnime->cover ?? null;

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Http;
 use App\Models\Anime;
 use App\Models\Category;
 use App\Models\Season;
 use App\Models\Language;
 use App\Models\Type;
+use App\Models\Episode;
+
 use App\Models\Studio;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -233,4 +236,40 @@ public function update(Request $request, Anime $anime)
 
         return redirect()->back()->with('success', 'تم حذف الأنمي بنجاح');
     }
+
+  public function latestTvAnime()
+    {
+        try {
+            // أحدث أنمي TV
+            $latest_tv = Anime::where('type', 'tv')
+                ->where('is_active', 1)
+                ->latest()
+                ->first();
+
+            // أحدث Movie
+            $latest_movie = Anime::where('type', 'Movie')
+                ->where('is_active', 1)
+                ->latest()
+                ->first();
+
+            // أحدث حلقة منشورة
+            $latest_episode = Episode::where('is_published', 1)
+                ->latest('release_date') // أو حسب حقل آخر لديك
+                ->first();
+
+            return response()->json([
+                'latest_tv' => $latest_tv,
+                'latest_movie' => $latest_movie,
+                'latest_episode' => $latest_episode,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch latest anime data',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
 }

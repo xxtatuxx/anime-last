@@ -16,9 +16,17 @@ use App\Http\Controllers\WebSetting\LanguageController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnimeController;
 use App\Http\Controllers\Home\HomeController;
+use App\Http\Controllers\Home\ShowEpisodesController;
+
+use App\Http\Controllers\en\enHomeController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SearchControllerEN;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EpisodeController;
+
+
 use Inertia\Inertia;
+use App\Http\Controllers\NewsController;
 
 // Middleware Classes
 use App\Http\Middleware\CheckUserPermission;
@@ -32,14 +40,60 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+
+
+//////////////////////قسم العربي //////////////////////////////////////////////
 Route::get('/ar/home', [HomeController::class, 'index'])->name('ar.home');
 
+Route::get('/ar/anime', [HomeController::class, 'anime'])->name('ar.anime');
+Route::get('/ar/movies', [HomeController::class, 'movies'])->name('ar.movies');
+Route::get('/ar/episodes-list', [HomeController::class, 'Episodes'])->name('ar.Episodes');
+
+Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+Route::get('/latest-tv-anime', [AnimeController::class, 'latestTvAnime']);
+Route::get('ar/episodes/{episode}', [ShowEpisodesController::class, 'show'])->name('ar.episodes.show');
+
+    Route::get('ar/animes/{anime}', [HomeController::class, 'show'])->name('ar.animes.show');
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+//////////////////////قسم الأنجليزي //////////////////////////////////////////////
+
+Route::get('/en/home', [enHomeController::class, 'index'])->name('en.home');
+
+
+Route::get('/en/anime', [enHomeController::class, 'anime'])->name('en.anime');
+
+Route::get('/en/movies', [enHomeController::class, 'movies'])->name('en.movies');
+
+Route::get('/en/episodes-list', [enHomeController::class, 'Episodes'])->name('en.Episodes');
+
+
+Route::get('/en/search', [SearchControllerEN::class, 'index'])->name('en-search');
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('news', NewsController::class);
+});
 // ========================
 // لوحة التحكم
 // ========================
-Route::get('dashboard', function () {
+Route::get('/dashboard', function () {
+
+    if (!Gate::allows('dashboard-access')) {
+        return redirect('/'); // لو المستخدم ليس لديه الصلاحيات
+    }
+
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
