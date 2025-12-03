@@ -4,6 +4,21 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <!-- SEO BASIC -->
+        <title inertia>{{ $title ?? 'Anime Last - مشاهدة الأنمي' }}</title>
+        <meta name="description" content="{{ $description ?? 'Anime Last — موقع متخصص لمشاهدة وتحميل الأنمي أونلاين بجودة عالية وبث سريع جداً.' }}">
+        <meta name="robots" content="index, follow">
+
+        <!-- Canonical -->
+        <link rel="canonical" href="{{ url()->current() }}">
+
+        <!-- Open Graph (Social Media SEO) -->
+        <meta property="og:title" content="{{ $title ?? 'Anime Last - مشاهدة الأنمي' }}">
+        <meta property="og:description" content="{{ $description ?? 'Anime Last — موقع متخصص لمشاهدة وتحميل الأنمي أونلاين بجودة عالية وبث سريع جداً.' }}">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:image" content="{{ $image ?? asset('logo.png') }}">
+
         <!-- Theme Auto Detection -->
         <script>
             (function() {
@@ -28,14 +43,11 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
-
-        <!-- ✔ YouTube Arabic Font (Roboto Arabic) -->
+        <!-- Arabic Font -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap&subset=arabic" rel="stylesheet">
 
-        <!-- ✔ Apply font to entire project (Tailwind + Vue + Inertia) -->
         <style>
             html, body, * {
                 font-family: 'Roboto', sans-serif !important;
