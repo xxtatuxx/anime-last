@@ -4,7 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <!-- SEO BASIC -->
+        <!-- Google Search Console Verification -->
+        <meta name="google-site-verification" content="5iev-JIMf5ZYNobdqNWgV4kZoeP2FfWiyWAxnDxm5OE" />
+
+        <!-- SEO Basic -->
         <title inertia>{{ $title ?? 'Anime Last - مشاهدة الأنمي' }}</title>
         <meta name="description" content="{{ $description ?? 'Anime Last — موقع متخصص لمشاهدة وتحميل الأنمي أونلاين بجودة عالية وبث سريع جداً.' }}">
         <meta name="robots" content="index, follow">
@@ -19,7 +22,7 @@
         <meta property="og:url" content="{{ url()->current() }}">
         <meta property="og:image" content="{{ $image ?? asset('logo.png') }}">
 
-        <!-- Theme Auto Detection -->
+        <!-- Theme Auto Detection (Dark Mode) -->
         <script>
             (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
@@ -37,7 +40,6 @@
             html {
                 background-color: oklch(1 0 0);
             }
-
             html.dark {
                 background-color: oklch(0.145 0 0);
             }
@@ -54,6 +56,7 @@
             }
         </style>
 
+        <!-- Routes & Vite -->
         @routes
         @vite(['resources/js/app.ts'])
         @inertiaHead
