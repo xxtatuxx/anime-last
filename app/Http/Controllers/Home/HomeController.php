@@ -166,6 +166,40 @@ public function movies(Request $request)
     ]);
 }
 
+public function getHomeData(Request $request)
+{
+    $search = $request->input('search');
+
+    $query = Episode::with('series')->orderByDesc('id');
+    if (!empty($search)) {
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+              ->orWhere('episode_number', $search)
+              ->orWhereHas('series', function ($seriesQuery) use ($search) {
+                  $seriesQuery->where('title', 'LIKE', "%{$search}%");
+              });
+        });
+    }
+    $episodes = $query->take(14)->get();
+
+    $animeQuery = Anime::query()->orderByDesc('id');
+    if (!empty($search)) {
+        $animeQuery->where(function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+              ->orWhere('title_en', 'LIKE', "%{$search}%");
+        });
+    }
+    $animes = $animeQuery->get();
+
+    $news = News::orderByDesc('id')->take(5)->get();
+
+    return response()->json([
+        'episodes' => $episodes,
+        'animes' => $animes,
+        'news' => $news,
+        'filters' => ['search' => $search],
+    ]);
+}
 
 
 public function Episodes(Request $request)
