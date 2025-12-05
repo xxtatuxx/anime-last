@@ -42,6 +42,9 @@ Route::get('/', function () {
 
 
 
+Route::get('/home-data', [HomeController::class, 'getHomeData']);
+
+
 //////////////////////قسم العربي //////////////////////////////////////////////
 Route::get('/ar/home', [HomeController::class, 'index'])->name('ar.home');
 
