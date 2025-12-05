@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Test Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .box {
+      margin-top: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 12px 16px;
+      background: black;
+      color: white;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>صفحة HTML تعمل بدون Laravel</h1>
+
+  <div class="box">
+    <p>هذه صفحة HTML مخزّنة داخل public وتفتح مباشرة بدون أي Route أو Controller.</p>
+
+    <button onclick="loadData()">جلب بيانات من Laravel API</button>
+
+    <pre id="result" style="margin-top:20px; white-space:pre-wrap;"></pre>
+  </div>
+
+  <script>
+    function loadData() {
+      fetch('/api/test') // ضع API تبعك هنا
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('result').textContent = 'حدث خطأ: ' + err;
+        });
+    }
+  </script>
+
+</body>
+</html>
