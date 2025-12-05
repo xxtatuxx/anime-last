@@ -40,7 +40,33 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+use App\Models\Episode;
 
+Route::get('/web-api/episodes', function (\Illuminate\Http\Request $request) {
+    $search = $request->query('search', '');
+    $page = $request->query('page', 1);
+    $perPage = 14;
+
+    $query = Episode::with('series')->orderByDesc('id');
+
+    if(!empty($search)) {
+        $query->where(function($q) use ($search){
+            $q->where('title','LIKE',"%{$search}%")
+              ->orWhere('episode_number',$search)
+              ->orWhereHas('series',function($sq) use($search){
+                  $sq->where('title','LIKE',"%{$search}%");
+              });
+        });
+    }
+
+    $episodes = $query->paginate($perPage, ['*'], 'page', $page);
+
+    return response()->json([
+        'episodes' => $episodes->items(),
+        'current_page' => $episodes->currentPage(),
+        'next_page_url' => $episodes->nextPageUrl()
+    ]);
+});
 
 Route::get('/home-data', [HomeController::class, 'getHomeData']);
 
