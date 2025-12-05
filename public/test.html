@@ -1,72 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Home Data Test</title>
-  <style>
-    body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-    h2 { margin-top: 30px; }
-    .item { padding: 10px; background: #fff; margin: 5px 0; border-radius: 5px; }
-  </style>
+<meta charset="UTF-8">
+<title>AnimeLast - الصفحة الرئيسية</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<style>
+body { font-family: 'Cairo', sans-serif; background: #f9f9f9; color: #111; }
+.dark body { background: #0f0f0f; color: #fff; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1a1a1a; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
+.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s ease; }
+.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
+.modal-fade-enter-active .transform, .modal-fade-leave-active .transform { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.modal-fade-enter-from .transform { transform: scale(0.95) translateY(10px); }
+.modal-fade-leave-to .transform { transform: scale(0.95) translateY(10px); }
+</style>
 </head>
-<body>
+<body class="min-h-screen font-cairo">
 
-<h1>اختبار جلب بيانات من Laravel</h1>
+<div class="max-w-[1600px] mx-auto px-4 md:px-6 py-8 space-y-12">
 
-<div>
-  <label>بحث: <input type="text" id="search" /></label>
-  <button onclick="loadData()">بحث</button>
+  <!-- البحث + أحدث الحلقات -->
+  <section>
+    <div class="flex flex-col items-center justify-between gap-4 mb-6 md:flex-row">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-indigo-100 rounded-xl"><span data-feather="zap"></span></div>
+        <h2 class="text-2xl font-bold text-gray-900">أحدث الحلقات</h2>
+      </div>
+      <div class="relative w-full md:w-80">
+        <input type="text" id="search" placeholder="بحث..." class="w-full pr-10 pl-4 py-2.5 bg-white border rounded-full text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" data-feather="search"></span>
+      </div>
+    </div>
+
+    <div id="episodes" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-4 gap-x-4 gap-y-8"></div>
+    <div class="flex justify-center mt-8">
+      <button id="loadMoreBtn" class="px-8 py-2.5 bg-white border rounded-full text-sm font-bold hover:bg-indigo-50 transition-all">المزيد</button>
+    </div>
+  </section>
+
+  <!-- قسم الأفلام -->
+  <section id="moviesSection" class="hidden">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-purple-100 rounded-xl"><span data-feather="film"></span></div>
+        <h2 class="text-2xl font-bold text-gray-900">أفلام مختارة</h2>
+      </div>
+      <a href="/animes?type=Movie" class="flex items-center gap-1 text-sm font-bold text-indigo-500 hover:text-indigo-600">عرض الكل <span data-feather="chevron-left"></span></a>
+    </div>
+    <div id="movies" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+  </section>
+
+  <!-- قسم الأنميات -->
+  <section id="tvSection" class="hidden">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-pink-100 rounded-xl"><span data-feather="tv"></span></div>
+        <h2 class="text-2xl font-bold text-gray-900">أحدث الأنميات</h2>
+      </div>
+      <a href="/animes?type=TV" class="flex items-center gap-1 text-sm font-bold text-indigo-500 hover:text-indigo-600">عرض الكل <span data-feather="chevron-left"></span></a>
+    </div>
+    <div id="tvAnimes" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+  </section>
+
 </div>
 
-<h2>الحلقات</h2>
-<div id="episodes"></div>
+<!-- footer -->
+<footer class="bg-white border-t border-gray-200 mt-12 pt-12 pb-6 text-center">
+  <h2 class="mb-4 text-2xl font-black text-indigo-600">ANIME LAST</h2>
+  <p class="text-xs text-gray-600">© 2025 Anime Last.</p>
+</footer>
 
-<h2>الأنميات</h2>
-<div id="animes"></div>
-
-<h2>الأخبار</h2>
-<div id="news"></div>
+<!-- modal -->
+<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+  <div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 transform transition-all">
+    <button id="closeModalBtn" class="absolute flex items-center justify-center w-8 h-8 text-white rounded-full top-3 right-3 bg-black/40 hover:bg-black/60">X</button>
+    <div id="modalContent" class="p-5 pt-2"></div>
+  </div>
+</div>
 
 <script>
-  const API_URL = '/home-data';
+feather.replace();
+const API_URL = '/home-data';
+let episodesPage = 1;
+let nextPageUrl = true;
+const episodesDiv = document.getElementById('episodes');
+const moviesDiv = document.getElementById('movies');
+const tvDiv = document.getElementById('tvAnimes');
+const loadMoreBtn = document.getElementById('loadMoreBtn');
+const searchInput = document.getElementById('search');
+const moviesSection = document.getElementById('moviesSection');
+const tvSection = document.getElementById('tvSection');
+const modal = document.getElementById('modal');
+const modalContent = document.getElementById('modalContent');
+const closeModalBtn = document.getElementById('closeModalBtn');
 
-  function loadData() {
-    const search = document.getElementById('search').value;
-    fetch(`${API_URL}?search=${encodeURIComponent(search)}`)
-      .then(res => res.json())
-      .then(data => {
-        const episodesDiv = document.getElementById('episodes');
-        episodesDiv.innerHTML = '';
-        data.episodes.forEach(ep => {
+function fetchData(reset=false) {
+  let search = searchInput.value;
+  fetch(`${API_URL}?search=${encodeURIComponent(search)}&page=${episodesPage}`)
+    .then(res => res.json())
+    .then(data => {
+      if(reset) episodesDiv.innerHTML='';
+      data.episodes.forEach(ep=>{
+        const div = document.createElement('div');
+        div.className = 'relative flex flex-col gap-2 cursor-pointer group';
+        div.innerHTML = `
+          <div class="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-gray-200 shadow-sm group-hover:shadow-md transition-all">
+            ${ep.thumbnail ? `<img src="/storage/${ep.thumbnail}" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110 opacity-90 group-hover:opacity-100">` :
+            `<div class="flex items-center justify-center w-full h-full text-gray-400">No Img</div>`}
+            <span class="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[12px] font-bold px-1.5 py-0.5 rounded">الحلقة ${ep.episode_number}</span>
+          </div>
+          <div class="flex flex-col px-1">
+            <h3 class="text-sm font-bold text-gray-900 line-clamp-1">${ep.series?.title || 'عنوان غير متوفر'}</h3>
+            <div class="flex items-center justify-between mt-1 text-[10px] text-gray-500">
+              <span class="truncate max-w-[70%] opacity-80">${ep.title || 'حلقة جديدة'}</span>
+            </div>
+          </div>`;
+        div.onclick = ()=>openModal(ep);
+        episodesDiv.appendChild(div);
+      });
+      if(data.animes && data.animes.length>0){
+        moviesSection.classList.remove('hidden');
+        tvSection.classList.remove('hidden');
+        moviesDiv.innerHTML=''; tvDiv.innerHTML='';
+        data.animes.forEach(anime=>{
           const div = document.createElement('div');
-          div.className = 'item';
-          div.textContent = ep.title + ' - الحلقة: ' + ep.episode_number;
-          episodesDiv.appendChild(div);
+          div.className = 'group flex bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-purple-500/50 hover:shadow-lg transition-all cursor-pointer h-40';
+          div.innerHTML = `
+            <div class="relative h-full w-28 shrink-0">
+              ${anime.cover ? `<img src="/storage/${anime.cover}" class="object-cover w-full h-full">`:
+              `<div class="flex items-center justify-center w-full h-full text-xs bg-gray-200">No Img</div>`}
+              <div class="absolute top-2 right-2 bg-purple-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">${anime.type || 'FILM'}</div>
+            </div>
+            <div class="flex flex-col flex-1 p-4">
+              <h3 class="mb-1 text-base font-bold line-clamp-1">${anime.title}</h3>
+              <p class="text-xs leading-relaxed text-gray-500 line-clamp-3">${anime.description || 'لا يوجد وصف'}</p>
+            </div>`;
+          moviesDiv.appendChild(div);
         });
+      }
+      nextPageUrl = data.episodes.length>0;
+    });
+}
 
-        const animesDiv = document.getElementById('animes');
-        animesDiv.innerHTML = '';
-        data.animes.forEach(anime => {
-          const div = document.createElement('div');
-          div.className = 'item';
-          div.textContent = anime.title;
-          animesDiv.appendChild(div);
-        });
+function openModal(ep){
+  modalContent.innerHTML = `
+    <h3 class="text-lg font-bold">${ep.series?.title || 'عنوان الحلقة'}</h3>
+    <p class="text-xs text-gray-500">${ep.title || ''}</p>
+  `;
+  modal.classList.remove('hidden');
+}
+closeModalBtn.onclick = ()=> modal.classList.add('hidden');
 
-        const newsDiv = document.getElementById('news');
-        newsDiv.innerHTML = '';
-        data.news.forEach(n => {
-          const div = document.createElement('div');
-          div.className = 'item';
-          div.textContent = n.title;
-          newsDiv.appendChild(div);
-        });
-      })
-      .catch(err => console.error(err));
-  }
+loadMoreBtn.onclick = ()=>{
+  if(nextPageUrl) { episodesPage++; fetchData(); }
+};
+searchInput.addEventListener('input', ()=>{ episodesPage=1; fetchData(true); });
 
-  // تحميل البيانات عند فتح الصفحة
-  loadData();
+fetchData();
 </script>
 
 </body>
