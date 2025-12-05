@@ -63,6 +63,11 @@
     </head>
 
     <body class="font-sans antialiased">
-        @inertia
+        
+        @inertia<a href="/test.html" 
+   style="padding: 10px 16px; background: black; color: white; border-radius: 8px; text-decoration: none;">
+  فتح صفحة HTML
+</a>
+
     </body>
 </html>
