@@ -2,36 +2,38 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>AnimeLast - تفاصيل الأنمي</title>
+<title>AnimeLast - تفاصيل الحلقة</title>
 <style>
 body {
     font-family: 'Cairo', sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    color: #111;
+    background:#f9f9f9;
+    margin:0;
+    color:#111;
 }
-header, footer { text-align: center; padding: 20px; background: #fff; border-bottom: 1px solid #ccc; }
-h1, h2 { color: #6366f1; }
-.container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-.anime-header { display: flex; gap: 20px; margin-bottom: 20px; }
-.anime-header img { width: 250px; height: 350px; object-fit: cover; border-radius: 15px; }
-.anime-info { flex: 1; }
-.anime-info h2 { margin-top: 0; }
-.anime-info p { line-height: 1.5; margin: 10px 0; }
-.episode-list { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
-.episode-card {
-    flex: 1 1 120px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.3s;
+header, footer { text-align:center; padding:20px; background:#fff; border-bottom:1px solid #ccc; }
+h1,h2 { color:#6366f1; }
+.container { max-width:1200px; margin:20px auto; padding:0 20px; }
+.anime-header { display:flex; gap:20px; margin-bottom:20px; }
+.anime-header img { width:250px; height:350px; object-fit:cover; border-radius:15px; }
+.anime-info { flex:1; }
+.anime-info h2 { margin-top:0; }
+.anime-info p { line-height:1.5; margin:10px 0; }
+.episode-list, .latest-episodes { display:flex; flex-wrap:wrap; gap:15px; margin-top:20px; }
+.card {
+    flex:1 1 120px;
+    background-color:#fff;
+    padding:10px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    cursor:pointer;
+    text-align:center;
+    transition:all 0.3s;
 }
-.episode-card:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 15px rgba(0,0,0,0.15); }
-.episode-card span { display: block; font-size: 12px; margin-top: 5px; color: #555; }
-footer { margin-top: 50px; border-top: 1px solid #ccc; color: #555; font-size: 12px; }
+.card:hover { transform:translateY(-3px) scale(1.05); box-shadow:0 10px 15px rgba(0,0,0,0.15); }
+.card img { width:100%; height:150px; object-fit:cover; }
+.card-title { font-weight:bold; font-size:14px; margin:5px 0; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; }
+.card-episode { font-size:12px; color:#555; }
+h3 { margin-top:40px; color:#6366f1; }
 </style>
 </head>
 <body>
@@ -41,9 +43,15 @@ footer { margin-top: 50px; border-top: 1px solid #ccc; color: #555; font-size: 1
 </header>
 
 <div class="container">
-    <div id="animeContent">
-        <p>جاري تحميل بيانات الأنمي...</p>
+    <div id="animeInfo" class="anime-header">
+        <!-- معلومات الأنمي ستحمل بواسطة JS -->
     </div>
+
+    <h3>جميع الحلقات</h3>
+    <div id="allEpisodes" class="episode-list"></div>
+
+    <h3>آخر الحلقات المضافة</h3>
+    <div id="latestEpisodes" class="latest-episodes"></div>
 </div>
 
 <footer>
@@ -51,45 +59,56 @@ footer { margin-top: 50px; border-top: 1px solid #ccc; color: #555; font-size: 1
 </footer>
 
 <script>
-// جلب الـ ID من الرابط
-const urlParams = new URLSearchParams(window.location.search);
-const episodeId = urlParams.get('id');
+const params = new URLSearchParams(window.location.search);
+const episodeId = params.get('id');
+if(!episodeId) { alert('لا يوجد ID الحلقة'); }
 
-// عنصر العرض
-const container = document.getElementById('animeContent');
+const animeInfoDiv = document.getElementById('animeInfo');
+const allEpisodesDiv = document.getElementById('allEpisodes');
+const latestEpisodesDiv = document.getElementById('latestEpisodes');
 
-// استدعاء API جلب بيانات الحلقة
-fetch(`/api/episode/${episodeId}`)
+fetch(`/web-api/episode/${episodeId}`)
 .then(res => res.json())
 .then(data => {
-    const episode = data.episode;
+    const ep = data.episode;
     const series = data.series;
     const allEpisodes = data.allEpisodes;
+    const latestEpisodes = data.latestEpisodes;
 
-    container.innerHTML = `
-    <div class="anime-header">
-        <img src="/storage/${series.cover || ''}" alt="${series.title}">
+    // معلومات الأنمي
+    animeInfoDiv.innerHTML = `
+        <img src="/storage/${series.cover}" alt="${series.title}">
         <div class="anime-info">
             <h2>${series.title}</h2>
             <p>${series.description || 'لا يوجد وصف متاح لهذا الأنمي.'}</p>
-            <p><strong>الحلقة الحالية:</strong> ${episode.episode_number} - ${episode.title || ''}</p>
+            <p><strong>الحلقة الحالية:</strong> ${ep.episode_number} - ${ep.title}</p>
         </div>
-    </div>
-    <h2>جميع الحلقات</h2>
-    <div class="episode-list">
-        ${allEpisodes.map(ep => `
-            <div class="episode-card" onclick="window.location.href='anime.html?id=${ep.id}'">
-                الحلقة ${ep.episode_number}
-                <span>${ep.title || ''}</span>
-            </div>
-        `).join('')}
-    </div>
     `;
+
+    // جميع الحلقات
+    allEpisodes.forEach(e=>{
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.textContent = `الحلقة ${e.episode_number} | ${e.title || ''}`;
+        div.onclick = ()=> window.location.href = `anime.html?id=${e.id}`;
+        allEpisodesDiv.appendChild(div);
+    });
+
+    // آخر الحلقات المضافة
+    latestEpisodes.forEach(e=>{
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+            ${e.thumbnail ? `<img src="/storage/${e.thumbnail}" />` :
+            `<div style="height:150px;background:#eee;display:flex;align-items:center;justify-content:center;">No Img</div>`}
+            <div class="card-title">${e.series?.title || 'عنوان غير متوفر'}</div>
+            <div class="card-episode">الحلقة ${e.episode_number}</div>
+        `;
+        div.onclick = ()=> window.location.href = `anime.html?id=${e.id}`;
+        latestEpisodesDiv.appendChild(div);
+    });
 })
-.catch(err=>{
-    console.error(err);
-    container.innerHTML = '<p>حدث خطأ أثناء جلب بيانات الأنمي.</p>';
-});
+.catch(err=>console.error('حدث خطأ أثناء جلب بيانات الأنمي.', err));
 </script>
 
 </body>
