@@ -51,13 +51,6 @@ input:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99,102,241,0.5); }
     transition: 0.3s;
 }
 #loadMoreBtn:hover { background-color: #6366f1; color: #fff; border-color: #6366f1; }
-
-.modal-backdrop { position: fixed; inset:0; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
-.modal-backdrop.show { opacity: 1; pointer-events: auto; }
-.modal { background-color: #fff; border-radius: 20px; max-width: 400px; width: 90%; padding: 20px; position: relative; transform: scale(0.95); transition: all 0.3s; }
-.modal.show { transform: scale(1); }
-.modal-close { position: absolute; top: 10px; left: 10px; background: #000; color: #fff; border:none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; }
-.modal h3 { margin: 10px 0; }
 </style>
 </head>
 <body>
@@ -78,27 +71,17 @@ input:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99,102,241,0.5); }
     © 2025 Anime Last
 </footer>
 
-<div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal" id="modal">
-        <button class="modal-close" id="closeModalBtn">×</button>
-        <div id="modalContent"></div>
-    </div>
-</div>
-
 <script>
-const API_URL = '/home-data'; // ضع endpoint الخاص بالحلقة هنا
-let episodesPage = 1;
-let nextPageUrl = true;
+let page = 1;
+let nextPage = true;
 const episodesDiv = document.getElementById('episodes');
-const loadMoreBtn = document.getElementById('loadMoreBtn');
 const searchInput = document.getElementById('search');
-const modalBackdrop = document.getElementById('modalBackdrop');
-const modalContent = document.getElementById('modalContent');
-const closeModalBtn = document.getElementById('closeModalBtn');
+const loadMoreBtn = document.getElementById('loadMoreBtn');
 
-function fetchData(reset=false){
+// جلب البيانات من web-api
+function fetchEpisodes(reset=false){
     const search = searchInput.value;
-    fetch(`${API_URL}?search=${encodeURIComponent(search)}&page=${episodesPage}`)
+    fetch(`/web-api/episodes?search=${encodeURIComponent(search)}&page=${page}`)
         .then(res => res.json())
         .then(data => {
             if(reset) episodesDiv.innerHTML='';
@@ -116,42 +99,28 @@ function fetchData(reset=false){
                 div.onclick = ()=> window.location.href = `anime.html?id=${ep.id}`;
                 episodesDiv.appendChild(div);
             });
-            nextPageUrl = data.episodes.length>0;
-        });
+            nextPage = data.next_page_url !== null;
+        })
+        .catch(err=>console.error('حدث خطأ أثناء جلب بيانات الأنمي.', err));
 }
 
-// فتح المودال (يمكن تعديله لاحقاً)
-function openModal(ep){
-    modalContent.innerHTML = `
-        <h3>${ep.series?.title || 'عنوان الحلقة'}</h3>
-        <p>${ep.title || ''}</p>
-        <p style="font-size:12px;color:#555;">${ep.description || 'لا يوجد وصف للحلقة'}</p>
-    `;
-    modalBackdrop.classList.add('show');
-    document.querySelector('.modal').classList.add('show');
-}
-
-closeModalBtn.onclick = ()=>{
-    document.querySelector('.modal').classList.remove('show');
-    modalBackdrop.classList.remove('show');
-}
-
-// تحميل المزيد
-loadMoreBtn.onclick = ()=>{
-    if(nextPageUrl) { episodesPage++; fetchData(); }
-};
-
-// بحث تلقائي
+// بحث تلقائي أثناء الكتابة
 let debounceTimer;
 searchInput.addEventListener('input', ()=>{
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(()=>{
-        episodesPage = 1; fetchData(true);
+        page = 1;
+        fetchEpisodes(true);
     }, 300);
 });
 
-// جلب البيانات أول مرة
-fetchData();
+// تحميل المزيد
+loadMoreBtn.addEventListener('click', ()=>{
+    if(nextPage) { page++; fetchEpisodes(); }
+});
+
+// جلب البيانات لأول مرة
+fetchEpisodes();
 </script>
 
 </body>
