@@ -33,6 +33,26 @@ use App\Http\Middleware\CheckUserPermission;
 use App\Http\Middleware\CheckRolePermission;
 use App\Http\Middleware\CheckPermissionPermission;
 
+
+
+
+Route::get('/web-api/episode/{id}', function($id){
+    $episode = \App\Models\Episode::with(['series','videos'])->findOrFail($id);
+    $allEpisodes = \App\Models\Episode::where('series_id',$episode->series_id)->orderBy('episode_number','asc')->get();
+    $latestEpisodes = \App\Models\Episode::with('series')->orderByDesc('created_at')->limit(15)->get();
+
+    return response()->json([
+        'episode' => $episode,
+        'series' => $episode->series,
+        'allEpisodes' => $allEpisodes,
+        'latestEpisodes' => $latestEpisodes
+    ]);
+});
+
+
+
+
+
 // ========================
 // الصفحة الرئيسية
 // ========================
