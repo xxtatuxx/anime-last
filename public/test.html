@@ -10,7 +10,17 @@ body {
     margin: 0;
     color: #111;
 }
-header, footer { text-align: center; }
+header, footer { text-align: center; padding: 20px; background: #fff; border-bottom: 1px solid #ccc; }
+h1 { color: #6366f1; }
+.search-wrapper { position: relative; width: 300px; margin: 0 auto; }
+.search-wrapper::after {
+    content: '🔍';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
 input {
     width: 100%;
     padding: 10px 40px 10px 15px;
@@ -21,15 +31,7 @@ input {
     transition: 0.3s;
 }
 input:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99,102,241,0.5); }
-.search-wrapper { position: relative; width: 300px; margin-left: auto; margin-right: auto; }
-.search-wrapper::after {
-    content: '🔍';
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #888;
-}
+
 .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 20px; margin-top: 20px; }
 .card { background-color: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
 .card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 20px rgba(0,0,0,0.2); }
@@ -56,13 +58,12 @@ input:focus { border-color: #6366f1; box-shadow: 0 0 8px rgba(99,102,241,0.5); }
 .modal.show { transform: scale(1); }
 .modal-close { position: absolute; top: 10px; left: 10px; background: #000; color: #fff; border:none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; }
 .modal h3 { margin: 10px 0; }
-footer { padding: 20px 0; background: #fff; border-top: 1px solid #ccc; color: #555; font-size: 12px; }
 </style>
 </head>
 <body>
 
 <header>
-    <h1 style="color:#6366f1;">ANIME LAST</h1>
+    <h1>ANIME LAST</h1>
     <div class="search-wrapper">
         <input type="text" id="search" placeholder="بحث...">
     </div>
@@ -85,7 +86,7 @@ footer { padding: 20px 0; background: #fff; border-top: 1px solid #ccc; color: #
 </div>
 
 <script>
-const API_URL = '/home-data';
+const API_URL = '/home-data'; // ضع endpoint الخاص بالحلقة هنا
 let episodesPage = 1;
 let nextPageUrl = true;
 const episodesDiv = document.getElementById('episodes');
@@ -112,13 +113,14 @@ function fetchData(reset=false){
                         <div class="card-episode">الحلقة ${ep.episode_number} | ${ep.title || ''}</div>
                     </div>
                 `;
-                div.onclick = ()=> openModal(ep);
+                div.onclick = ()=> window.location.href = `anime.html?id=${ep.id}`;
                 episodesDiv.appendChild(div);
             });
             nextPageUrl = data.episodes.length>0;
         });
 }
 
+// فتح المودال (يمكن تعديله لاحقاً)
 function openModal(ep){
     modalContent.innerHTML = `
         <h3>${ep.series?.title || 'عنوان الحلقة'}</h3>
