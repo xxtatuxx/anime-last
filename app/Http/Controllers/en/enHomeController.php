@@ -191,6 +191,20 @@ public function Episodes(Request $request)
     ]);
 }
 
+public function show(Anime $anime)
+{
+    $anime->load([
+        'user',
+        'episodes' => function ($query) {
+            $query->orderBy('episode_number', 'asc');
+        },
+        'categories',
+        'season', // ✅ إضافة علاقة الموسم هنا
+    ]);
 
+    return Inertia::render('home-en/en-anime-show', [
+        'anime' => $anime,
+    ]);
+}
 
 }

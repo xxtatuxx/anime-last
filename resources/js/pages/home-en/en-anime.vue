@@ -3,8 +3,18 @@ import AppLayout from '@/layouts/EN-HomeLayout.vue';
 import { Head, Link, usePage, router as inertia } from '@inertiajs/vue3';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { toast } from 'vue-sonner';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/composables/useAuth';
+// استيراد الأيقونات
+import { 
+  Search, 
+  Filter, 
+  Tv, 
+  Star, 
+  Play, 
+  ChevronRight, 
+  ChevronLeft,
+  RefreshCw 
+} from 'lucide-vue-next';
 
 const breadcrumbs = [
   { title: 'Animes', href: '/animes' },
@@ -25,7 +35,6 @@ const currentPage = ref(page.props.animes.current_page || 1);
 const lastPage = ref(page.props.animes.last_page || 1);
 const search = ref('');
 const loading = ref(false);
-const loadingSkeleton = ref(false);
 
 // فلترة
 const showFilter = ref(false);
@@ -37,37 +46,26 @@ const selectedSeason = ref('');
 const categories = ref(page.props.categories || []);
 const seasons = ref(page.props.seasons || []);
 
-// الصلاحيات
+// الصلاحيات (تم الإبقاء عليها للمنطق)
 const { can } = useAuth();
-const canAnime = (action: 'create-anime' | 'update-anime' | 'delete-anime') => {
-  const user = page.props.auth.user;
-  if (can('admin')) return true;
-  if (can(action)) return true;
-  const userRoles = user.roles || [];
-  for (const role of userRoles) {
-    if (role.permissions?.includes(action)) return true;
-  }
-  return false;
-};
 
-// حذف الأنمي بدون إعادة تحميل الصفحة
+// حذف الأنمي (الإبقاء على الدالة في حال تم إضافتها لاحقاً في واجهة الإدارة)
 const deleteAnime = (id: number) => {
   if (!confirm('هل أنت متأكد من حذف هذا الأنمي؟')) return;
-
   inertia.delete(`/animes/${id}`, {
     onSuccess: () => {
       animes.value = animes.value.filter(a => a.id !== id);
       toast.success('تم حذف الأنمي بنجاح');
     },
-    onError: () => {
-      toast.error('حدث خطأ أثناء الحذف');
-    },
+    onError: () => toast.error('حدث خطأ أثناء الحذف'),
   });
 };
 
 // دالة إرسال الفلاتر والبحث للسيرفر
 const fetchFilteredAnimes = (pageUrl?: string) => {
+  if (loading.value) return;
   loading.value = true;
+
   inertia.get(pageUrl || route('en.anime'), {
     search: search.value,
     status: selectedStatus.value,
@@ -78,37 +76,21 @@ const fetchFilteredAnimes = (pageUrl?: string) => {
     preserveScroll: true,
     only: ['animes'],
     onSuccess: (pageResponse) => {
-      if (pageUrl) {
-        const newData = pageResponse.props.animes.data;
-        const existingIds = new Set(animes.value.map(a => a.id));
-        const filteredData = newData.filter(a => !existingIds.has(a.id));
-        animes.value.push(...filteredData);
-      } else {
-        animes.value = pageResponse.props.animes.data;
-      }
+      animes.value = pageResponse.props.animes.data;
       nextPageUrl.value = pageResponse.props.animes.next_page_url;
       prevPageUrl.value = pageResponse.props.animes.prev_page_url;
       currentPage.value = pageResponse.props.animes.current_page;
       lastPage.value = pageResponse.props.animes.last_page;
     },
-    onFinish: () => {
-      loading.value = false;
-      loadingSkeleton.value = false;
-    }
+    onFinish: () => loading.value = false
   });
 };
 
-// البحث مباشر عند كتابة أي شيء
-watch(search, () => {
-  fetchFilteredAnimes();
-});
+// المراقبة (Watchers)
+watch(search, () => fetchFilteredAnimes());
+watch([selectedStatus, selectedCategory, selectedSeason], () => fetchFilteredAnimes());
 
-// الفلاتر تعمل مباشرة عند تغييرها
-watch([selectedStatus, selectedCategory, selectedSeason], () => {
-  fetchFilteredAnimes();
-});
-
-// زر تفريغ الفلاتر والبحث
+// إعادة تعيين الفلاتر
 const resetFilters = () => {
   search.value = '';
   selectedStatus.value = '';
@@ -117,12 +99,12 @@ const resetFilters = () => {
   fetchFilteredAnimes();
 };
 
-// التنقل بين الصفحات عبر pagination
+// Pagination
 const goToPage = (pageNumber: number) => {
-  fetchFilteredAnimes(`${route('ar.anime')}?page=${pageNumber}&search=${search.value}&status=${selectedStatus.value}&category=${selectedCategory.value}&season=${selectedSeason.value}`);
+  fetchFilteredAnimes(`${route('en.anime')}?page=${pageNumber}&search=${search.value}&status=${selectedStatus.value}&category=${selectedCategory.value}&season=${selectedSeason.value}`);
 };
 
-// تحميل المزيد عند التمرير
+// تحميل المزيد (Scroll)
 const loadMore = () => {
   if (!nextPageUrl.value || loading.value) return;
   fetchFilteredAnimes(nextPageUrl.value);
@@ -131,12 +113,11 @@ const loadMore = () => {
 const onScroll = () => {
   const scrollPosition = window.innerHeight + window.scrollY;
   const bottom = document.documentElement.offsetHeight - 50;
-  if (scrollPosition >= bottom) {
+  if (scrollPosition >= bottom && nextPageUrl.value) {
     loadMore();
   }
 };
 
-// عرض الفلاش مرة واحدة
 onMounted(() => {
   if (page.props.flash?.success) {
     toast.success(page.props.flash.success);
@@ -149,81 +130,174 @@ onUnmounted(() => {
   window.removeEventListener('scroll', onScroll);
 });
 </script>
-
 <template>
-  <Head title="Animes" />
+  <Head title="Anime List - AnimeLast" />
+  
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="flex flex-col flex-1 h-full gap-4 p-4 rounded-xl">
-<span dir="rtl">الأنمي - قسم مسلسلات</span>
-      <!-- مربع البحث + زر الفلترة -->
-      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-center">
-        <Input v-model="search" placeholder="Search animes..." class="w-full h-10 md:w-1/3" />
-        <button @click="showFilter = !showFilter" class="flex items-center gap-2 px-4 py-2 transition-all duration-300 bg-white border rounded-md hover:bg-gray-100">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            :class="`w-6 h-6 ${darkMode ? 'stroke-gray-200' : 'stroke-gray-800'}`">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z"/>
-          </svg>
-          <span class="font-medium text-black">Filter</span>
-        </button>
-        <button @click="resetFilters" class="flex items-center gap-2 px-4 py-2 text-gray-900 transition-all duration-300 bg-white border rounded-md hover:bg-gray-100">Reset All</button>
-      </div>
+    <div  class="min-h-screen bg-[#f9f9f9] dark:bg-[#0f0f0f] font-cairo pb-12 text-right">
+      
+      <div class="max-w-[1600px] mx-auto px-4 md:px-6 py-8 space-y-8">
 
-      <!-- قائمة الفلترة -->
-      <transition name="fade-slide">
-        <div v-if="showFilter" class="flex flex-wrap items-center justify-center gap-3 p-5  bg-white/80 dark:bg-[#292929cc] backdrop-blur-md rounded-xl shadow-lg transition-all duration-300">
-          <select v-model="selectedStatus" class="px-4 py-2 text-gray-800 border rounded-lg dark:bg-gray-900 dark:text-white">
-            <option value="">All Status</option>
-            <option value="Active">يعرض الأن</option>
-            <option value="completed">مكتمل</option>
-          </select>
-
-          <select v-model="selectedCategory" class="px-4 py-2 text-gray-800 border rounded-lg dark:bg-gray-900 dark:text-white">
-            <option value="">All Categories</option>
-            <option v-for="category in categories" :key="category.id" :value="category.name_en">{{ category.name_en }}</option>
-          </select>
-
-          <select v-model="selectedSeason" class="px-4 py-2 text-gray-800 bg-white border rounded-lg dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500">
-            <option value="">All Seasons</option>
-            <option v-for="season in seasons" :key="season.id" :value="season.id">{{ season.name_en }}</option>
-          </select>
-        </div>
-      </transition>
-
-      <!-- شبكة الأنميات -->
-      <div class="grid grid-cols-2 gap-4 mt-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        <div v-for="anime in animes" :key="anime.id" class="flex flex-col overflow-hidden transition-transform bg-white rounded-lg shadow-md cursor-pointer dark:bg-[#171717] hover:scale-105">
-          <Link :href="route('animes.show', anime.id)">
-            <img v-if="anime.image" :src="`/storage/${anime.image}`" class="object-cover w-full h-[300px]"/>
-            <div v-else class="flex items-center justify-center w-full h-48 text-gray-500 bg-gray-200 dark:bg-gray-700">No Image</div>
-          </Link>
-          <div class="flex flex-col gap-1 p-2">
-            <h3 class="text-sm font-bold text-gray-800 truncate dark:text-white">{{ anime.title }}</h3>
-            <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
-              <span :class="anime.is_active ? 'text-green-500' : 'text-red-500'">{{ anime.is_active ? 'يعرض الأن' : 'مكتمل' }}</span>
+        <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-xl">
+                    <Tv class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Anime Series</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Browse the latest episodes and ongoing series</p>
+                </div>
             </div>
-          </div>
+
+            <div class="flex flex-col w-full gap-3 md:flex-row md:w-auto">
+                 <div class="relative w-full md:w-80">
+                    <Search class="absolute w-4 h-4 text-gray-400 -translate-y-1/2 right-3 top-1/2" />
+                    <input 
+                        v-model="search"
+                        type="text" 
+                        placeholder="Search for an anime..." 
+                        class="w-full pr-10 pl-4 py-2.5 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] rounded-full text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
+                    />
+                </div>
+                
+                <div class="flex gap-2">
+                    <button 
+                        @click="showFilter = !showFilter" 
+                        class="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold transition-all border rounded-full group"
+                        :class="showFilter 
+                            ? 'bg-purple-600 text-white border-purple-600' 
+                            : 'bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#333] hover:border-purple-500 hover:text-purple-600'"
+                    >
+                        <Filter class="w-4 h-4" />
+                        <span>Filter</span>
+                    </button>
+
+                    <button 
+                        @click="resetFilters" 
+                        title="Reset"
+                        class="flex items-center justify-center w-10 h-10 transition-all bg-white border border-gray-200 rounded-full dark:bg-[#1a1a1a] dark:border-[#333] hover:text-red-500 hover:border-red-500 text-gray-500"
+                    >
+                        <RefreshCw class="w-4 h-4" :class="{'animate-spin': loading}" />
+                    </button>
+                </div>
+            </div>
         </div>
+
+        <transition name="fade-slide">
+            <div v-if="showFilter" class="p-6 bg-white border border-gray-100 shadow-xl dark:bg-[#1a1a1a] dark:border-[#333] rounded-2xl">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-500">Status</label>
+                        <select v-model="selectedStatus" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-[#333] rounded-xl text-sm outline-none focus:border-purple-500">
+                            <option value="">All</option>
+                            <option value="Active">Ongoing</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                         <label class="text-xs font-bold text-gray-500">Category</label>
+                        <select v-model="selectedCategory" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-[#333] rounded-xl text-sm outline-none focus:border-purple-500">
+                            <option value="">All Categories</option>
+                            <option v-for="category in categories" :key="category.id" :value="category.name">{{ category.name }}</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                         <label class="text-xs font-bold text-gray-500">Season</label>
+                        <select v-model="selectedSeason" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-[#333] rounded-xl text-sm outline-none focus:border-purple-500">
+                            <option value="">All Seasons</option>
+                            <option v-for="season in seasons" :key="season.id" :value="season.id">{{ season.name }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <div v-if="animes.length > 0" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div 
+                v-for="anime in animes" 
+                :key="anime.id" 
+                class="group flex flex-col bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#333] rounded-xl overflow-hidden hover:border-purple-500/50 hover:shadow-lg transition-all cursor-pointer"
+            >
+                <Link :href="route('en.animes.show', anime.id)" class="relative aspect-[2/3] overflow-hidden bg-gray-200 dark:bg-gray-800">
+                    <img 
+                        v-if="anime.image" 
+                        :src="`/storage/${anime.image}`" 
+                        class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div v-else class="flex items-center justify-center w-full h-full text-xs text-gray-400">No Image</div>
+                    
+                    <div class="absolute inset-0 flex items-center justify-center transition-opacity opacity-0 bg-black/40 group-hover:opacity-100">
+                         <div class="flex items-center justify-center w-12 h-12 bg-purple-600 rounded-full shadow-lg backdrop-blur-sm bg-opacity-90">
+                            <Play class="w-5 h-5 ml-1 text-white fill-current" />
+                         </div>
+                    </div>
+
+                    <div class="absolute top-2 right-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
+                        TV
+                    </div>
+                </Link>
+
+                <div class="flex flex-col flex-1 p-3">
+                    <div class="flex items-start justify-between mb-1">
+                        <Link :href="route('animes.show', anime.id)">
+                            <h3 class="text-sm font-bold text-gray-900 transition-colors dark:text-white line-clamp-1 group-hover:text-purple-500" :title="anime.title">
+                                {{ anime.title }}
+                            </h3>
+                        </Link>
+                    </div>
+
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="flex items-center gap-1 text-xs font-bold text-yellow-500">
+                            <Star class="w-3 h-3 fill-current" />
+                            <span>{{ anime.rating || 'N/A' }}</span>
+                        </div>
+                        <span class="text-[10px] text-gray-300">|</span>
+                        <span class="text-[10px]" :class="anime.is_active ? 'text-green-500' : 'text-blue-500'">
+                            {{ anime.is_active ? 'Ongoing' : 'Completed' }}
+                        </span>
+                    </div>
+
+                    <p class="mt-auto text-xs leading-relaxed text-gray-500 dark:text-gray-400 line-clamp-2">
+                         {{ anime.description || 'No description available.' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div v-else-if="!loading" class="flex flex-col items-center justify-center py-20 text-center">
+            <div class="p-4 mb-4 bg-gray-100 rounded-full dark:bg-gray-800">
+                <Search class="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">No anime found</h3>
+            <p class="text-gray-500">Try searching with different keywords or adjusting the filters</p>
+            <button @click="resetFilters" class="mt-4 text-purple-600 hover:underline">Reset Filters</button>
+        </div>
+
+        <div v-if="lastPage > 1" class="flex items-center justify-center gap-2 mt-8 dir-ltr">
+            <button 
+                :disabled="currentPage === 1" 
+                @click="goToPage(currentPage - 1)" 
+                class="flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full dark:bg-[#1a1a1a] dark:border-[#333] hover:border-purple-500 hover:text-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+                <ChevronRight class="w-5 h-5" />
+            </button>
+            
+            <span class="px-4 py-2 text-sm font-bold bg-white border border-gray-200 rounded-full dark:bg-[#1a1a1a] dark:border-[#333] dark:text-white">
+                {{ currentPage }} / {{ lastPage }}
+            </span>
+
+            <button 
+                :disabled="currentPage === lastPage" 
+                @click="goToPage(currentPage + 1)" 
+                class="flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full dark:bg-[#1a1a1a] dark:border-[#333] hover:border-purple-500 hover:text-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+                <ChevronLeft class="w-5 h-5" />
+            </button>
+        </div>
+
       </div>
-
-      <!-- Pagination -->
-      <div class="flex items-center justify-center gap-2 mt-6">
-        <button 
-          :disabled="currentPage === 1" 
-          @click="goToPage(currentPage - 1)" 
-          class="px-3 py-1 border rounded disabled:opacity-50">
-          Prev
-        </button>
-
-        <span class="px-2">{{ currentPage }} / {{ lastPage }}</span>
-
-        <button 
-          :disabled="currentPage === lastPage" 
-          @click="goToPage(currentPage + 1)" 
-          class="px-3 py-1 border rounded disabled:opacity-50">
-          Next
-        </button>
-      </div>
-
     </div>
   </AppLayout>
 </template>
@@ -232,4 +306,19 @@ onUnmounted(() => {
 .fade-slide-enter-active, .fade-slide-leave-active { transition: all 0.3s ease; }
 .fade-slide-enter-from, .fade-slide-leave-to { opacity: 0; transform: translateY(-10px); }
 .fade-slide-enter-to, .fade-slide-leave-from { opacity: 1; transform: translateY(0); }
+
+/* تنسيق شريط التمرير - تم تغييره إلى الموف */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #1a1a1a; 
+}
+::-webkit-scrollbar-thumb {
+    background: #333; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #7c3aed; /* Purple-600 */
+}
 </style>

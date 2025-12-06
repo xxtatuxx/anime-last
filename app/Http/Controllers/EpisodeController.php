@@ -142,6 +142,12 @@ public function store(Request $request)
         }
     }
 
+    // Notify all users about the new episode
+    // Note: For large user bases, this should be queued or handled via a subscription system.
+    // For now, we notify all users as requested.
+    $users = \App\Models\User::all();
+    \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\NewEpisodeNotification($episode));
+
     return redirect()->route('episodes.index')->with('success', 'تم إنشاء الحلقة بنجاح');
 }
 
@@ -279,12 +285,33 @@ public function show(Episode $episode)
     // جلب الحلقة مع بيانات المسلسل وروابط الفيديو
     $episode = Episode::with(['series', 'videos'])->findOrFail($episode->id);
 
+    $this->recordHistory($episode);
+
     return Inertia::render('Episodes/Details', [
         'episode' => $episode,
         'videos' => $episode->videos, // روابط الفيديو
         'series' => $episode->series, // بيانات المسلسل
     ]);
 }
+
+    /**
+     * Record history for episode visit
+     */
+    private function recordHistory($episode)
+    {
+        if (auth()->check()) {
+            \App\Models\History::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'episode_id' => $episode->id,
+                    'type' => 'view',
+                ],
+                [
+                    'updated_at' => now(),
+                ]
+            );
+        }
+    }
 
     public function destroy(Episode $episode)
     {

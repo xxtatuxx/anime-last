@@ -237,37 +237,48 @@ public function update(Request $request, Anime $anime)
         return redirect()->back()->with('success', 'تم حذف الأنمي بنجاح');
     }
 
+  /**
+   * أحدث الأنميات - مع كاش دائم على السيرفر + كاش المتصفح
+   */
   public function latestTvAnime()
     {
         try {
-            // أحدث أنمي TV
-            $latest_tv = Anime::where('type', 'tv')
-                ->where('is_active', 1)
-                ->latest()
-                ->first();
+            // ✅ كاش دائم على السيرفر
+            $data = \Illuminate\Support\Facades\Cache::rememberForever('cache:latest:tv:anime', function () {
+                return [
+                    'latest_tv' => Anime::where('type', 'tv')
+                        ->where('is_active', 1)
+                        ->latest()
+                        ->first(),
+                    'latest_movie' => Anime::where('type', 'Movie')
+                        ->where('is_active', 1)
+                        ->latest()
+                        ->first(),
+                    'latest_episode' => Episode::where('is_published', 1)
+                        ->latest('release_date')
+                        ->first(),
+                ];
+            });
 
-            // أحدث Movie
-            $latest_movie = Anime::where('type', 'Movie')
-                ->where('is_active', 1)
-                ->latest()
-                ->first();
-
-            // أحدث حلقة منشورة
-            $latest_episode = Episode::where('is_published', 1)
-                ->latest('release_date') // أو حسب حقل آخر لديك
-                ->first();
-
-            return response()->json([
-                'latest_tv' => $latest_tv,
-                'latest_movie' => $latest_movie,
-                'latest_episode' => $latest_episode,
-            ]);
+            // ✅ كاش المتصفح - 10 دقائق
+            return response()->json($data)
+                ->header('Cache-Control', 'public, max-age=600')
+                ->header('ETag', md5(json_encode($data)));
+                
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch latest anime data',
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * مسح كاش أحدث الأنميات (يُستدعى عند إضافة/تعديل أنمي أو حلقة)
+     */
+    public static function clearLatestTvAnimeCache(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget('cache:latest:tv:anime');
     }
 
 

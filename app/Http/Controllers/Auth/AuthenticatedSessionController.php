@@ -35,14 +35,15 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
+ public function store(LoginRequest $request): RedirectResponse
+{
+    $request->authenticate();
+    $request->session()->regenerate();
 
-        $request->session()->regenerate();
+    // إرسال رسالة فلاش عند تسجيل الدخول فقط
+    return to_route('ar.home')->with('flash', ['success' => 'تم تسجيل الدخول']);
+}
 
-        return redirect()->intended(route('dashboard', absolute: false));
-    }
 
     /**
      * Destroy an authenticated session.
@@ -54,6 +55,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return back();
+          return to_route('ar.home');
+
     }
 }

@@ -24,6 +24,14 @@ class PasswordController extends Controller
         ]);
     }
 
+        public function aredit(Request $request): Response
+    {
+        return Inertia::render('settings/ar-Password', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => $request->session()->get('status'),
+        ]);
+    }
+
     /**
      * Update the user's password.
      */

@@ -22,7 +22,7 @@ defineProps<Props>();
     <DropdownMenuGroup>
         <DropdownMenuItem :as-child="true">
             <Link class="block w-full" :href="route('profile.edit')" as="button">
-                <Settings class="mr-2 h-4 w-4" />
+                <Settings class="w-4 h-4 mr-2" />
                 Settings
             </Link>
         </DropdownMenuItem>
@@ -30,7 +30,7 @@ defineProps<Props>();
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
         <Link class="block w-full" method="post" :href="route('logout')" as="button">
-            <LogOut class="mr-2 h-4 w-4" />
+            <LogOut class="w-4 h-4 mr-2" />
             Log out
         </Link>
     </DropdownMenuItem>

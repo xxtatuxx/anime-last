@@ -10,7 +10,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/AppLayout.vue';
+import AppLayout from '@/layouts/EN-HomeLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import type { BreadcrumbItem, SharedData, User } from '@/types';
 
@@ -147,17 +147,23 @@ const submit = () => {
   form.permissions.forEach(p => data.append('permissions[]', p));
   if (form.avatar) data.append('avatar', form.avatar);
 
-  form.post(route('profile.update'), {
-    data,
-    preserveScroll: true,
-    preserveState: true,
-    onSuccess: (page) => {
-      toast.success('تم تعديل البيانات بنجاح');
-      const newAvatar = form.avatar ? URL.createObjectURL(form.avatar) : page.props.auth.user.avatar;
-      page.props.auth.user.avatar = newAvatar;
-    },
-  });
+form.post(route('profile.update'), {
+  data,
+  preserveScroll: true,
+  preserveState: true,
+  onSuccess: (page) => {
+    toast.success('Data updated successfully');
+    const newAvatar = form.avatar ? URL.createObjectURL(form.avatar) : page.props.auth.user.avatar;
+    page.props.auth.user.avatar = newAvatar;
+    
+          setTimeout(() => {
+        window.location.reload();
+      }, 1);
+  },
+  
+});
 };
+
 </script>
 
 <template>
@@ -269,7 +275,7 @@ const submit = () => {
         </div>
 
         <!-- Roles -->
-        <div class="mb-4">
+        <div hidden class="mb-4">
           <Label>Roles</Label>
           <button 
             type="button" 
@@ -284,7 +290,7 @@ const submit = () => {
         </div>
 
         <!-- Permissions -->
-        <div class="mb-4">
+        <div hidden class="mb-4">
           <Label>Permissions</Label>
           <button 
             type="button" 

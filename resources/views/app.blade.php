@@ -35,8 +35,11 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap&subset=arabic" rel="stylesheet">
 
-        <!-- ✔ Apply font to entire project (Tailwind + Vue + Inertia) -->
-        <style>
+        <!-- ✔
+         
+      
+        Apply font to entire project (Tailwind + Vue + Inertia) -->
+          <style>
             html, body, * {
                 font-family: 'Roboto', sans-serif !important;
             }

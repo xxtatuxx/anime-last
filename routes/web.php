@@ -17,16 +17,55 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnimeController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Home\ShowEpisodesController;
+use App\Http\Controllers\en\enShowEpisodesController;
 
 use App\Http\Controllers\en\enHomeController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SearchControllerEN;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EpisodeController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\WatchLaterController;
 
 
 use Inertia\Inertia;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\Home\HomeControllerAPI;
+
+// ========================
+// React API Routes
+// ========================
+Route::prefix('api/react')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])->group(function () {
+    // Public routes
+    Route::get('/home', [HomeControllerAPI::class, 'apiHome']);
+    Route::get('/episodes', [HomeControllerAPI::class, 'apiAllEpisodes']);
+    Route::get('/anime', [HomeControllerAPI::class, 'apiAnime']);
+    Route::get('/movies', [HomeControllerAPI::class, 'apiMovies']);
+    Route::get('/anime/{anime}', [HomeControllerAPI::class, 'apiAnimeShow']);
+    Route::get('/episodes/{episode}', [HomeControllerAPI::class, 'apiEpisodeShow']);
+    
+    // Auth routes
+    Route::post('/login', [HomeControllerAPI::class, 'apiLogin']);
+    Route::post('/register', [HomeControllerAPI::class, 'apiRegister']);
+    Route::post('/logout', [HomeControllerAPI::class, 'apiLogout']);
+    Route::get('/user', [HomeControllerAPI::class, 'apiUser']);
+    
+    // User features (notifications, watch later, history)
+    Route::get('/notifications', [HomeControllerAPI::class, 'apiNotifications']);
+    Route::post('/notifications/mark-read', [HomeControllerAPI::class, 'apiMarkNotificationsRead']);
+    Route::get('/watch-later', [HomeControllerAPI::class, 'apiWatchLater']);
+    Route::post('/watch-later/{episode}', [HomeControllerAPI::class, 'apiAddWatchLater']);
+    Route::delete('/watch-later/{episode}', [HomeControllerAPI::class, 'apiRemoveWatchLater']);
+    Route::get('/history', [HomeControllerAPI::class, 'apiHistory']);
+    Route::post('/history/record', [HomeControllerAPI::class, 'apiRecordActivity']);
+    
+    // Comments API
+    Route::post('/comments', [HomeControllerAPI::class, 'apiAddComment']);
+    Route::post('/comments/{comment}/like', [HomeControllerAPI::class, 'apiLikeComment']);
+    Route::put('/comments/{comment}', [HomeControllerAPI::class, 'apiEditComment']);
+    Route::delete('/comments/{comment}', [HomeControllerAPI::class, 'apiDeleteComment']);
+});
 
 // Middleware Classes
 use App\Http\Middleware\CheckUserPermission;
@@ -44,6 +83,7 @@ Route::get('/', function () {
 
 //////////////////////قسم العربي //////////////////////////////////////////////
 Route::get('/ar/home', [HomeController::class, 'index'])->name('ar.home');
+Route::get('/api/home/episodes', [HomeController::class, 'apiEpisodes'])->name('api.home.episodes');
 
 Route::get('/ar/anime', [HomeController::class, 'anime'])->name('ar.anime');
 Route::get('/ar/movies', [HomeController::class, 'movies'])->name('ar.movies');
@@ -52,8 +92,10 @@ Route::get('/ar/episodes-list', [HomeController::class, 'Episodes'])->name('ar.E
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 Route::get('/latest-tv-anime', [AnimeController::class, 'latestTvAnime']);
-Route::get('ar/episodes/{episode}', [ShowEpisodesController::class, 'show'])->name('ar.episodes.show');
-
+    Route::get('/ar/episodes/latest-paginated', [ShowEpisodesController::class, 'latestPaginated']);
+    Route::get('/ar/episodes/series/{series}/paginated', [ShowEpisodesController::class, 'seriesEpisodesPaginated']);
+    Route::get('ar/episodes/{episode}', [ShowEpisodesController::class, 'show'])->name('ar.episodes.show');
+    
     Route::get('ar/animes/{anime}', [HomeController::class, 'show'])->name('ar.animes.show');
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +116,8 @@ Route::get('/en/episodes-list', [enHomeController::class, 'Episodes'])->name('en
 
 
 Route::get('/en/search', [SearchControllerEN::class, 'index'])->name('en-search');
+Route::get('en/episodes/{episode}', [enShowEpisodesController::class, 'show'])->name('en.episodes.show');
+    Route::get('en/animes/{anime}', [enHomeController::class, 'show'])->name('en.animes.show');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -253,6 +297,33 @@ Route::middleware(['auth'])->group(function () {
     Route::get('episodes/{episode}/edit', [EpisodeController::class, 'edit'])->name('episodes.edit');
     Route::put('episodes/{episode}', [EpisodeController::class, 'update'])->name('episodes.update');
     Route::delete('episodes/{episode}', [EpisodeController::class, 'destroy'])->name('episodes.destroy');
+    
+    // Comments & Replies
+    Route::post('/episodes/{episode}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::put('/comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/comments/{comment}/like', [CommentController::class, 'toggleLike'])->name('comments.like');
+    
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/page', [NotificationController::class, 'page'])->name('notifications.page');
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
+    Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clearAll');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+    // Watch Later
+    Route::get('/watch-later', [WatchLaterController::class, 'index'])->name('watch-later.index');
+    Route::post('/watch-later', [WatchLaterController::class, 'store'])->name('watch-later.store');
+    Route::delete('/watch-later/{episode}', [WatchLaterController::class, 'destroy'])->name('watch-later.destroy');
+
+    // History
+    Route::get('/history', [\App\Http\Controllers\HistoryController::class, 'index'])->name('history.index');
+    Route::get('/history/page', [\App\Http\Controllers\HistoryController::class, 'page'])->name('history.page');
+    Route::delete('/history/clear-all', [\App\Http\Controllers\HistoryController::class, 'clearAll'])->name('history.clearAll');
+
+    // Watch Later - Full Page
+    Route::get('/watch-later/page', [WatchLaterController::class, 'page'])->name('watch-later.page');
 });
 
 
@@ -265,6 +336,8 @@ Route::middleware(['auth'])->group(function () {
 Route::patch('/settings/profile', [ProfileController::class, 'update'])
     ->middleware(['auth', 'verified'])
     ->name('profile.update');
+
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
 

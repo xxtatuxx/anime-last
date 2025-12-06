@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import AppLayout from '@/layouts/AppLayout.vue';
+import AppLayout from '@/layouts/EN-HomeLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { TransitionRoot } from '@headlessui/vue';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -67,7 +67,7 @@ const updatePassword = () => {
                             ref="currentPasswordInput"
                             v-model="form.current_password"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="block w-full mt-1"
                             autocomplete="current-password"
                             placeholder="Current password"
                         />
@@ -81,7 +81,7 @@ const updatePassword = () => {
                             ref="passwordInput"
                             v-model="form.password"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="block w-full mt-1"
                             autocomplete="new-password"
                             placeholder="New password"
                         />
@@ -94,7 +94,7 @@ const updatePassword = () => {
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
-                            class="mt-1 block w-full"
+                            class="block w-full mt-1"
                             autocomplete="new-password"
                             placeholder="Confirm password"
                         />

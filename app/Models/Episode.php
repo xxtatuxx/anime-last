@@ -65,8 +65,12 @@ class Episode extends Model
     }
     
     public function videos()
-{
-    return $this->hasMany(EpisodeVideo::class);
-}
+    {
+        return $this->hasMany(EpisodeVideo::class);
+    }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

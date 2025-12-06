@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import AppLayout from "@/layouts/AR-HomeLayout.vue";
+
 
 defineProps<{
     status?: string;
@@ -28,10 +30,11 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="تسجيل الدخول إلى حسابك" description="أدخل بريدك الإلكتروني وكلمة المرور لتسجيل الدخول">
+    <AppLayout>
+        <AuthBase title="تسجيل الدخول إلى حسابك" description="أدخل بريدك الإلكتروني وكلمة المرور لتسجيل الدخول">
         <Head title="تسجيل الدخول" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
+        <div v-if="status" class="mb-4 text-sm font-medium text-center text-green-600">
             {{ status }}
         </div>
 
@@ -78,16 +81,21 @@ const submit = () => {
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+                <Button type="submit" class="w-full mt-4" :tabindex="4" :disabled="form.processing">
+                    <LoaderCircle v-if="form.processing" class="w-4 h-4 animate-spin" />
                     تسجيل الدخول
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
+            <div class="text-sm text-center text-muted-foreground">
                 ليس لديك حساب؟
                 <TextLink :href="route('ar.register')" :tabindex="5">إنشاء حساب</TextLink>
             </div>
         </form>
     </AuthBase>
+    
+    
+    
+    </AppLayout>
+
 </template>
